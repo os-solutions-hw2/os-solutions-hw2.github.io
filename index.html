@@ -17,7 +17,7 @@
 (total 14 marks)
 
 <p>
-1.1 The ROM BIOS (1 marks)
+<b>1.1 The ROM BIOS <b>(1 marks)
 <pre>
 [f000:fff0]    0xffff0: ljmp   $0xf000,$0xe05b
 [f000:e05b]    0xfe05b: cmpl   $0x0,%cs:0x6c48
@@ -30,14 +30,14 @@
 </pre>
 
 <p>
-1.2 The Boot Loader (2 mark)
+<b>1.2 The Boot Loader <b>(2 mark)
 <pre>
 Before ljmp in bootasm.S: cs=0x0, eip = 0x7c2c (1 mark)
 After ljmp in bootasm.S: cs=0x8, eip = 0x7c31 (1 mark)
 </pre>
 
 <p>
-1.3 Pointers in C (2 marks)
+<b>1.3 Pointers in C<b> (2 marks)
 <pre>
 Before:
 c8 00 00 00 90 01 00 00 2d 01 00 00 2e 01 00 00 (1 mark)
@@ -46,24 +46,24 @@ c8 00 00 00 90 f4 01 00 00 01 00 00 2e 01 00 000 (1 mark)
 </pre>
 
 <p>
-1.4 Loading the Kernel (2 marks)<br>
+<b>1.4 Loading the Kernel<b> (2 marks)<br>
 They are different because the kernel has been loaded at 0x100000 by
 the loader. (1 marks)<br>
 At 0x100000 lives the "text" (or code) section of the kernel. (1 mark)
 <br>
 
 <p>
-Variable naming. (3 marks) <br>
+<b>Variable naming. <b>(3 marks) <br>
 
 
 <p>
-Caller and callee save registers (3 marks).<br>
+<b>Caller and callee save registers<b> (3 marks).<br>
 Basically the compiler should try and use callee-saved registers
 first in the caller; and vice-versa. Roughly half-half split ensures
 fairness across caller and callee.
 
 <p>
-Fastest implementation while respecting calling conventions (2 marks).<br>
+<b>Fastest implementation while respecting calling conventions <b>(2 marks)<br>
 <code>jmp _g</code><br>
 <code>call _g; ret</code> (1.5 marks)
 
