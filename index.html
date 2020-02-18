@@ -57,11 +57,12 @@ At 0x100000 lives the "text" (or code) section of the kernel. (1 mark)
 
 <p>
 <b>Variable naming. </b>(3 marks) <br>
+  3 marks for correct with comments
 </p>
 
 
 <p>
-<b>Caller and callee save registers</b> (3 marks).<br>
+<b>Caller and callee save registers</b> (2 marks).<br>
 Basically the compiler should try and use callee-saved registers
 first in the caller; and vice-versa. Roughly half-half split ensures
 fairness across caller and callee.
@@ -69,8 +70,11 @@ fairness across caller and callee.
 
 <p>
 <b>Fastest implementation while respecting calling conventions </b>(2 marks)<br>
-<code>jmp _g</code><br>
-<code>call _g; ret</code> (1.5 marks)
+<code>jmp _g</code> (2 marks)<br>
+  <br>
+<code>
+  call _g; 
+  ret</code> (1.5 marks)
 </p>
 
 <p><b>Assignment: fork, caching, and file-descriptor inheritance</b>
