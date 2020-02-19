@@ -18,7 +18,7 @@
 <br>
 
 <p>
-<b>1.1 The ROM BIOS </b>(1 marks)
+<b>1.1 The ROM BIOS </b>(1 mark)
 <pre>
 [f000:fff0]    0xffff0: ljmp   $0xf000,$0xe05b
 [f000:e05b]    0xfe05b: cmpl   $0x0,%cs:0x6c48
@@ -32,7 +32,7 @@
 </p>
   
 <p>
-<b>1.2 The Boot Loader </b>(2 mark)
+<b>1.2 The Boot Loader </b>(2 marks)
 <pre>
 Before ljmp in bootasm.S: cs=0x0, eip = 0x7c2c (1 mark)
 After ljmp in bootasm.S: cs=0x8, eip = 0x7c31 (1 mark)
