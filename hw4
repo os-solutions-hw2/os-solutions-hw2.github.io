@@ -1,0 +1,46 @@
+
+<p class="has-line-data" data-line-start="0" data-line-end="1">= HW4 =</p>
+<p class="has-line-data" data-line-start="2" data-line-end="3"><em>Assignment : Spin-locking (4 marks)</em></p>
+<p class="has-line-data" data-line-start="4" data-line-end="7"><em>idelock(1.5 mark)</em><br>
+The kernel panicked because the interrupt handler tried to acquire an already-held lock. The interrupt handler got called only because we enabled interrupts while holding the lock.  The panic would happen in “acquire”.<br>
+Another possibility is that the scheduler tick happens and yield() is called.  In this case, kernel would panic in sched() where it would find that <code>ncli</code> for this CPU is not equal than 1.  This increased ncli comes from pushcli() call in acquire.</p>
+<p class="has-line-data" data-line-start="8" data-line-end="10"><em>file_table_lock(1 mark)</em><br>
+Because unlike ide_lock, file_table_lock is not accessed by any interrupt handler.  Further, it is very unlikely that a scheduler tick happens between acquire() and release() of filealloc().</p>
+<p class="has-line-data" data-line-start="11" data-line-end="12"><em>Uniprocessor locking(0.5 marks)</em></p>
+<ol>
+<li class="has-line-data" data-line-start="12" data-line-end="13">No.  Because L cannot change without scheduling some other process which cannot happen because interrupts are disabled.  In other words, the system is deadlocked.</li>
+<li class="has-line-data" data-line-start="13" data-line-end="15">Yes.  Essentially a test-and-set implementation with <code>cli</code> and <code>sti</code> demarcating the critical/atomic section.</li>
+</ol>
+<p class="has-line-data" data-line-start="15" data-line-end="16"><em>Assignment : sleep and wakeup [2 marks]</em></p>
+<p class="has-line-data" data-line-start="17" data-line-end="19">This is correct, though wasteful. Sleeping on the same channel causes writers to wakeup whenever another writer exits (similarly for readers). The writers wakeup only to go back to sleep. This is wasteful and can be avoided by sleeping on different channels. Some unrelated part of the code can wakeup a consumer thread only if there is a bug in the kernel code which calls wakeup on the same channel.<br>
+Award full marks if the students that this is correct and gives a valid reason.</p>
+<p class="has-line-data" data-line-start="20" data-line-end="21"><em>Assignment : xv6 file system [8 marks]</em></p>
+<p class="has-line-data" data-line-start="22" data-line-end="23"><em>echo &gt; a</em> (3 mark)</p>
+<ol>
+<li class="has-line-data" data-line-start="24" data-line-end="25"><code>log_write 34</code>: open() system call is called (sys_open) which calls create() function.  Create function calls ialloc() to allocate a new inode.  ialloc() iterates over the inode block to find a free block.  In this case the free block is on sector 34.  At this point xv6 mark this block as used and write this information to disk using log_write().</li>
+<li class="has-line-data" data-line-start="25" data-line-end="26"><code>log_write 34</code>: create() updates the metadata (major, minor, n_link) of the inode and calls iupdate() which calls log_write() to update this information to disk also.</li>
+<li class="has-line-data" data-line-start="26" data-line-end="28"><code>log_write 59</code>: create() calls dirlink() which creates a new directory entry in the parent directory.  The dirlink() find the offset of empty directory entry for the parent directory.  Then it create a directory entry for the newly created inode and calls writei() which write the directory entry in the disk at the offset calculated in previous step.  Thus 59 is the sector number of the block where the directoy entry of the newly created inode is stored in the parent directory.</li>
+</ol>
+<p class="has-line-data" data-line-start="28" data-line-end="29"><em>echo x &gt; a</em> (2 mark)</p>
+<ol>
+<li class="has-line-data" data-line-start="30" data-line-end="31"><code>log_write 58</code>: write system call (sys_write) is called which calls filewrite().  filewrite() calls writei() which called bmap() to find the address of block for a given offset.  If this block is not allocated yet it calls balloc() to allocate a new block.  balloc() finds a free block.  It mainatins a bitmap for all the blocks in a block.  balloc() update bitmap to mark the new node as used and write this bitmap to disk.  Here 58 is the sector number of the block where bitmap is stored.</li>
+<li class="has-line-data" data-line-start="31" data-line-end="32"><code>log_write 666</code>: After allocating the block balloc() calls bzero() to zeros out the data field of the block and write the block to disk. Thus 666 is the block number of newly created block.</li>
+<li class="has-line-data" data-line-start="32" data-line-end="33"><code>log_write 666</code>: Now writei() copy the data to be written (i.e. “x”) into the data field of the new block and write this block to disk using log_write().</li>
+<li class="has-line-data" data-line-start="33" data-line-end="34"><code>log_write 34</code>: After that it update the size of the inode and write it into the disk by calling iupdate().</li>
+<li class="has-line-data" data-line-start="34" data-line-end="35"><code>log_write 666</code>: Again a new system call is called for writing “\n”. This time the block is already allocated hence the first two write does not take place. This time in writei() “\n” is written to corresponding block and then written to disk using log_write().</li>
+<li class="has-line-data" data-line-start="35" data-line-end="37"><code>log_write 34</code>: After that writei() update the size of the inode and write it into the disk by calling iupdate().</li>
+</ol>
+<p class="has-line-data" data-line-start="37" data-line-end="38"><em>rm a</em> (3 mark)</p>
+<ol>
+<li class="has-line-data" data-line-start="39" data-line-end="40"><code>log_write 59</code>: sys_unlink() is called which finds the directory entry for file <em>a</em> in the parent directory of <em>a</em>. It resets the directory entry and calls writei() which updates this information in the disk.</li>
+<li class="has-line-data" data-line-start="40" data-line-end="41"><code>log_write 34</code>: Now it decremets the metadata nlink of the inode corresponding to file <em>a</em> and update this information to disk using iupdate().</li>
+<li class="has-line-data" data-line-start="41" data-line-end="42"><code>log_write 58</code>: Here iunlockput() calls iput() which calls itrunc().  itrunc() calls bfree() for all the blocks of the inode.  bfree() mark the free blocks bitmap corresponding to the freed block as free and write the bitmap to disk using log_write().  Here 58 is the sector number of the block where bitmap is stored.</li>
+<li class="has-line-data" data-line-start="42" data-line-end="43"><code>log_write 34</code>: Now itrunc() resets the size of the inode and update it to disk using iupdate().</li>
+<li class="has-line-data" data-line-start="43" data-line-end="45"><code>log_write 34</code>: After that iput() resets the type field of inode and update it to disk using iupdate().</li>
+</ol>
+<p class="has-line-data" data-line-start="45" data-line-end="46"><em>Marks deduction Policy</em></p>
+<ul>
+<li class="has-line-data" data-line-start="47" data-line-end="48">Deduct 0.5 Marks for each incorrect description.</li>
+<li class="has-line-data" data-line-start="48" data-line-end="49">Deduct 1 Marks for wrong answer of “What is the third disk write (to sector 29)?” in first turn in.</li>
+<li class="has-line-data" data-line-start="49" data-line-end="51">Deduct 1 Marks for wrong answer of “Why do you see writes to block 4 (and to 426) twice?” in second turn in.</li>
+</ul>
